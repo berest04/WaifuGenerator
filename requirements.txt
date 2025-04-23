@@ -2,3 +2,4 @@ aiogram==2.25.2
 diffusers
 transformers
 accelerate
+torch
