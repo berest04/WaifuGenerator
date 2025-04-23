@@ -3,3 +3,4 @@ diffusers
 transformers
 accelerate
 torch
+aiohttp==3.8.1
