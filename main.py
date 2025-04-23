@@ -6,17 +6,22 @@ from torch import autocast
 from diffusers import StableDiffusionPipeline
 import transformers
 import time
+import os
+
+# Создание директории для временных изображений, если она не существует
+if not os.path.exists('./tmp_gen'):
+    os.makedirs('./tmp_gen')
 
 def dummy(images, **kwargs):
-  return images, False
+    return images, False
 
 async def generate_image(message_context):
-  with autocast("cuda"):
-    image = pipe(message_context.text, guidance_scale=6).images[0]
-  file_id = random.randint(10000, 10000000)
-  image.save(f"./tmp_gen/{file_id}.png")
-  return file_id  
- 
+    with autocast("cuda"):
+        image = pipe(message_context.text, guidance_scale=6).images[0]
+    file_id = random.randint(10000, 10000000)
+    image.save(f"./tmp_gen/{file_id}.png")
+    return file_id  
+
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
@@ -51,24 +56,20 @@ high quality
 
 
 async def send_result_waifu(message: types.Message, waifu):
-  with open(f'./tmp_gen/{waifu}.png', 'rb') as photo:
-    await message.reply_photo(photo, caption='Generated waifu image')
-
-
-
+    with open(f'./tmp_gen/{waifu}.png', 'rb') as photo:
+        await message.reply_photo(photo, caption='Generated waifu image')
 
 
 @dp.message_handler()
 async def echo(message: types.Message):
-  # Bypass NSFW checker :)
-  # Only for work; freelance yepta
-  pipe.safety_checker = dummy
-  await message.answer("Процесс генерации запущен, ожидайте результата (~20 секунд)")
-  res = await generate_image(message)
-  with open(f'./tmp_gen/{res}.png', 'rb') as photo:
-    await message.reply_photo(photo, caption='Generated waifu image')
+    # Bypass NSFW checker :)
+    # Only for work; freelance yepta
+    pipe.safety_checker = dummy
+    await message.answer("Процесс генерации запущен, ожидайте результата (~20 секунд)")
+    res = await generate_image(message)
+    with open(f'./tmp_gen/{res}.png', 'rb') as photo:
+        await message.reply_photo(photo, caption='Generated waifu image')
 
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
-
